@@ -1,30 +1,36 @@
 import os
 import discord
 from discord.ext import commands
-from numpy import random
 from keep_alive import keep_alive
 
-client = commands.Bot(command_prefix="/")
+intents = discord.Intents.default()
+intents.members = True
+
+bot = commands.Bot(command_prefix='!', intents=intents)
 token = os.environ['token']
 
-# Makes sure the bot loads
 
-
-@client.event
+@bot.event
 async def on_ready():
-    print("loaded")
+    print(f'Logged in as {bot.user.name}')
 
 
-# Basic intro to the Bot's commands
-"""
-@client.command()
-async def hello(ctx):
-    await ctx.send(
-        "Idea Bot is ready and waiting, just type !idea for an idea in one of your text channels!"
+@bot.event
+async def on_member_join(member):
+    channel = member.guild.system_channel
+    oath_channel = discord.utils.get(member.guild.channels, name="✋-zedlandic-oath")
+
+    await channel.send(
+        f'Welcome, {member.mention} to Zedland! Take the {oath_channel.mention} to become a citizen!'
     )
-"""
 
-# Authorizes and runs the bot
+
+@bot.event
+async def on_member_remove(member):
+    channel = member.guild.system_channel
+    await channel.send(
+        f'{member.mention} has renounced their Zedlandic citizenship')
+
 
 keep_alive()
-client.run(token)
+bot.run(token)
