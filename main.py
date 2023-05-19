@@ -19,9 +19,10 @@ async def on_ready():
 async def on_member_join(member):
     channel = member.guild.system_channel
     oath_channel = discord.utils.get(member.guild.channels, name="✋-zedlandic-oath")
+    subjects_channel = discord.utils.get(member.guild.channels, name="📚-subjects")
 
     await channel.send(
-        f'Welcome, {member.mention} to Zedland! Take the {oath_channel.mention} to become a citizen!'
+        f'Welcome, {member.mention} to Zedland! Take the {oath_channel.mention} and tell us your {subjects_channel.mention} to become a citizen!'
     )
 
 
