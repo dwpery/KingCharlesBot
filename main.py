@@ -12,7 +12,28 @@ token = os.environ['token']
 
 @bot.event
 async def on_ready():
-    print(f'Logged in as {bot.user.name}')
+    Channel = bot.get_channel(1115005311984599120)
+    text= "React with the following emojis to get the corresponding pronoun roles\n\n🔵 He/Him/His\n🟣 She/Her/Hers\n⚪ They/Them/Theirs\n\nDM <@" + str(id) + "> for others"
+    Moji = await Channel.send(text)
+    await Moji.add_reaction('🔵')
+    await Moji.add_reaction('🟣')
+    await Moji.add_reaction('⚪')
+
+    
+@bot.event
+async def on_reaction_add(reaction, user):
+    Channel = bot.get_channel(1115005311984599120)
+    if reaction.message.channel.id != Channel.id:
+        return
+    if reaction.emoji == "🔵":
+      Role = discord.utils.get(user.guild.roles, name="he/him/his")
+      await user.add_roles(Role)
+    if reaction.emoji == "🟣":
+      Role = discord.utils.get(user.guild.roles, name="she/her/hers")
+      await user.add_roles(Role)
+    if reaction.emoji == "⚪":
+      Role = discord.utils.get(user.guild.roles, name="they/them/theirs")
+      await user.add_roles(Role)
 
 
 @bot.event
