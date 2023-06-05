@@ -12,28 +12,61 @@ token = os.environ['token']
 
 @bot.event
 async def on_ready():
-    Channel = bot.get_channel(1115005311984599120)
-    text= "React with the following emojis to get the corresponding pronoun roles\n\n🔵 He/Him/His\n🟣 She/Her/Hers\n⚪ They/Them/Theirs\n\nDM <@" + str(id) + "> for others"
-    Moji = await Channel.send(text)
-    await Moji.add_reaction('🔵')
-    await Moji.add_reaction('🟣')
-    await Moji.add_reaction('⚪')
+    channel = bot.get_channel(1115005311984599120)
+    messages = await channel.history(limit=123).flatten()
+    if messages == []:
+      text= "React with the following emojis to get the corresponding pronoun roles\n\n🔵 He/Him/His\n🟣 She/Her/Hers\n⚪ They/Them/Theirs\n\nDM <@" + str(683620285811130375) + "> for others"
+      Moji = await channel.send(text)
+      await Moji.add_reaction('🔵')
+      await Moji.add_reaction('🟣')
+      await Moji.add_reaction('⚪')
 
     
 @bot.event
-async def on_reaction_add(reaction, user):
-    Channel = bot.get_channel(1115005311984599120)
-    if reaction.message.channel.id != Channel.id:
+async def on_raw_reaction_add(payload):
+    channel_id = 1115005311984599120
+    if payload.channel_id != channel_id:
         return
-    if reaction.emoji == "🔵":
-      Role = discord.utils.get(user.guild.roles, name="he/him/his")
-      await user.add_roles(Role)
-    if reaction.emoji == "🟣":
-      Role = discord.utils.get(user.guild.roles, name="she/her/hers")
-      await user.add_roles(Role)
-    if reaction.emoji == "⚪":
-      Role = discord.utils.get(user.guild.roles, name="they/them/theirs")
-      await user.add_roles(Role)
+
+    guild = bot.get_guild(payload.guild_id)
+    user = guild.get_member(payload.user_id)
+    if user.bot:
+        return
+
+    role_emojis = {
+        "🔵": "he/him/his",
+        "🟣": "she/her/hers",
+        "⚪": "they/them/theirs"
+    }
+
+    role_name = role_emojis.get(str(payload.emoji))
+    if role_name:
+        role = discord.utils.get(guild.roles, name=role_name)
+        if role is not None:
+            await user.add_roles(role)
+
+@bot.event
+async def on_raw_reaction_remove(payload):
+    channel_id = 1115005311984599120  # Replace with your desired channel ID
+    if payload.channel_id != channel_id:
+        return
+
+    guild = bot.get_guild(payload.guild_id)
+    user = guild.get_member(payload.user_id)
+    if user.bot:
+        return
+
+    role_emojis = {
+        "🔵": "he/him/his",
+        "🟣": "she/her/hers",
+        "⚪": "they/them/theirs"
+    }
+
+    role_name = role_emojis.get(str(payload.emoji))
+    if role_name:
+        role = discord.utils.get(guild.roles, name=role_name)
+        if role is not None:
+            await user.remove_roles(role)
 
 
 @bot.event
