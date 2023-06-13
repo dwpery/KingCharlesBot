@@ -77,4 +77,4 @@ async def on_raw_reaction_remove(payload):
     if role is not None:
         await user.remove_roles(role)
 
-bot.run("MTEwNTU2NjM5MDI1OTI4NjE4Ng.GCLjwT.tnEm5JZnPlk4GpWeejZx6CU1ofHbIhmFQb4l7M")
+bot.run(token)
