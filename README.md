@@ -1,1 +1,0 @@
-# King Charles III Discord Bot
