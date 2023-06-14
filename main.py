@@ -1,15 +1,19 @@
 import os
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
+from itertools import cycle
 
 intents = discord.Intents.all()
 intents.members = True
+
+status = cycle(['Glory to Zedland!','Welcome to Zedland!'])
 
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 @bot.event
 async def on_ready():
     print("Bot is ready.")
+    change_status.start()
     channel = bot.get_channel(1115005311984599120)
     messages = []
     async for message in channel.history(limit=1):
