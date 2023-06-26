@@ -10,11 +10,13 @@ status = cycle(['Glory to Zedland!','Welcome to Zedland!'])
 
 bot = commands.Bot(command_prefix='!', intents=intents)
 
+# Adds pronouns message if one does not exist already
+
 @bot.event
 async def on_ready():
     print("Bot is ready.")
     change_status.start()
-    channel = bot.get_channel(1115005311984599120)
+    channel = bot.get_channel(id)
     messages = []
     async for message in channel.history(limit=1):
       messages.append(message.content)
@@ -25,17 +27,40 @@ async def on_ready():
       await Moji.add_reaction('🟣')
       await Moji.add_reaction('⚪')
 
+# Changes status and updates members count
+
+@tasks.loop(seconds=10)
+async def change_status():
+  await update_channel_name()
+  await bot.change_presence(activity=discord.Game(next(status)))
+
+# Message for when a member joins
+
 @bot.event
 async def on_member_join(member):
     await member.guild.system_channel.send(f'Welcome, {member.mention} to Zedland (A community for Hereford Sixth Form College Students)! Take the {discord.utils.get(member.guild.channels, name="✋-zedlandic-oath").mention}, tell us your {discord.utils.get(member.guild.channels, name="📚-subjects").mention} and get your {discord.utils.get(member.guild.channels, name="👥-pronouns").mention} to become a citizen!')
+
+# Message for when a user leaves
 
 @bot.event
 async def on_member_remove(member):
     await member.guild.system_channel.send(f"{member.mention} has renounced their Zedlandic Citizenship and left the server!")
 
+# Sets channel name to members value
+
+async def update_channel_name():
+    guild = bot.get_guild(id)
+    channel = guild.get_channel(id)
+    member_count = len(guild.members) - 3
+
+    if isinstance(channel, discord.VoiceChannel):
+        await channel.edit(name=f'Members: {member_count}')
+
+# Adds pronoun roles based off of reaction
+
 @bot.event
 async def on_raw_reaction_add(payload):
-    channel_id = 1115005311984599120  # ID of the channel with the pronoun message
+    channel_id = id 
     if payload.channel_id != channel_id:
         return
 
@@ -57,9 +82,11 @@ async def on_raw_reaction_add(payload):
     if role is not None:
         await user.add_roles(role)
 
+# Removes pronoun roles based off of reaction
+
 @bot.event
 async def on_raw_reaction_remove(payload):
-    channel_id = 1115005311984599120  # ID of the channel with the pronoun message
+    channel_id = id 
     if payload.channel_id != channel_id:
         return
 
@@ -81,4 +108,6 @@ async def on_raw_reaction_remove(payload):
     if role is not None:
         await user.remove_roles(role)
 
-bot.run(token)
+# Runs bot
+
+bot.run("MTEwNTU2NjM5MDI1OTI4NjE4Ng.GQYWjU.ExvRUfUE7ytylA01-EZ8IOZL48TAOJT9Ai97dY")
