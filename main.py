@@ -110,4 +110,4 @@ async def on_raw_reaction_remove(payload):
 
 # Runs bot
 
-bot.run("MTEwNTU2NjM5MDI1OTI4NjE4Ng.GQYWjU.ExvRUfUE7ytylA01-EZ8IOZL48TAOJT9Ai97dY")
+bot.run("id")
