@@ -27,7 +27,7 @@ async def on_ready():
       await Moji.add_reaction('🟣')
       await Moji.add_reaction('⚪')
 
-# Changes status and updates members count
+# Changes status and updates member count
 
 @tasks.loop(seconds=10)
 async def change_status():
