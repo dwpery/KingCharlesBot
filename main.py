@@ -10,7 +10,7 @@ status = cycle(['Glory to Zedland!','Welcome to Zedland!'])
 
 bot = commands.Bot(command_prefix='!', intents=intents)
 
-# Adds pronouns message if one does not exist already
+# Adds pronoun message if one does not exist already
 
 @bot.event
 async def on_ready():
