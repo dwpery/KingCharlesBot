@@ -10,7 +10,7 @@ status = cycle(['Glory to Zedland!','Welcome to Zedland!'])
 
 bot = commands.Bot(command_prefix='!', intents=intents)
 
-# Adds pronoun message if one does not exist already
+# Adds pronouns message if one does not exist already
 
 @bot.event
 async def on_ready():
@@ -27,11 +27,10 @@ async def on_ready():
       await Moji.add_reaction('🟣')
       await Moji.add_reaction('⚪')
 
-# Changes status and updates member count
+# Changes status
 
 @tasks.loop(seconds=10)
 async def change_status():
-  await update_channel_name()
   await bot.change_presence(activity=discord.Game(next(status)))
 
 # Message for when a member joins
@@ -39,12 +38,14 @@ async def change_status():
 @bot.event
 async def on_member_join(member):
     await member.guild.system_channel.send(f'Welcome, {member.mention} to Zedland (A community for Hereford Sixth Form College Students)! Take the {discord.utils.get(member.guild.channels, name="✋-zedlandic-oath").mention}, tell us your {discord.utils.get(member.guild.channels, name="📚-subjects").mention} and get your {discord.utils.get(member.guild.channels, name="👥-pronouns").mention} to become a citizen!')
+    await update_channel_name()
 
 # Message for when a user leaves
 
 @bot.event
 async def on_member_remove(member):
     await member.guild.system_channel.send(f"{member.mention} has renounced their Zedlandic Citizenship and left the server!")
+    await update_channel_name()
 
 # Sets channel name to members value
 
