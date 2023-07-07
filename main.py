@@ -1,22 +1,40 @@
 import os
 import discord
+import json
+from discord import app_commands
 from discord.ext import commands, tasks
 from itertools import cycle
 
 intents = discord.Intents.all()
 intents.members = True
 
-status = cycle(['Glory to Zedland!','Welcome to Zedland!'])
+status = cycle(['Enjoy your time!','Welcome to the server!'])
 
-bot = commands.Bot(command_prefix='!', intents=intents)
+bot = commands.Bot(command_prefix='/', intents=intents)
+levels = {}
 
-# Adds pronoun message if one does not exist already
+# Loads and saves XP and Level data to json file
+
+def load_data():
+    with open("levels.json", "r") as file:
+        try:
+            data = json.load(file)
+        except:
+            data = {}
+    return data
+
+def save_data(data):
+    with open("levels.json", "w") as file:
+        json.dump(data, file, indent=4)
+
+# Adds pronouns message if one does not exist already
 
 @bot.event
 async def on_ready():
     print("Bot is ready.")
     change_status.start()
-    channel = bot.get_channel(id)
+
+    channel = bot.get_channel(ID)
     messages = []
     async for message in channel.history(limit=1):
       messages.append(message.content)
@@ -26,6 +44,12 @@ async def on_ready():
       await Moji.add_reaction('🔵')
       await Moji.add_reaction('🟣')
       await Moji.add_reaction('⚪')
+
+    try:
+        synced = await bot.tree.sync()
+        print(f"{len(synced)} commands synced")
+    except Exception as e:
+        print(e)
 
 # Changes status
 
@@ -37,31 +61,89 @@ async def change_status():
 
 @bot.event
 async def on_member_join(member):
-    await member.guild.system_channel.send(f'Welcome, {member.mention} to Zedland (A community for Hereford Sixth Form College Students)! Take the {discord.utils.get(member.guild.channels, name="✋-zedlandic-oath").mention}, tell us your {discord.utils.get(member.guild.channels, name="📚-subjects").mention} and get your {discord.utils.get(member.guild.channels, name="👥-pronouns").mention} to become a citizen!')
+    await member.guild.system_channel.send(f'Welcome, {member.mention} to the server!')
     await update_channel_name()
 
 # Message for when a user leaves
 
 @bot.event
 async def on_member_remove(member):
-    await member.guild.system_channel.send(f"{member.mention} has renounced their Zedlandic Citizenship and left the server!")
+    await member.guild.system_channel.send(f"{member.mention} has left the server!")
     await update_channel_name()
 
 # Sets channel name to members value
 
 async def update_channel_name():
-    guild = bot.get_guild(id)
-    channel = guild.get_channel(id)
+    guild = bot.get_guild(ID)
+    channel = guild.get_channel(ID)
     member_count = len(guild.members) - 3
 
     if isinstance(channel, discord.VoiceChannel):
         await channel.edit(name=f'Members: {member_count}')
 
+# Adds XP for messages
+
+@bot.event
+async def on_message(message):
+    if not message.author.bot:
+        user_id = str(message.author.id)
+        if user_id not in levels:
+            levels[user_id] = {
+                "xp": 0,
+                "level": 0
+            }
+        levels[user_id]["xp"] += 1
+        if levels[user_id]["xp"] >= 10*levels[user_id]["level"]:
+            levels[user_id]["level"] += 1
+            levels[user_id]["xp"] = 0  # Reset XP to 0 after leveling up
+            await message.channel.send(f"Congratulations {message.author.mention}! You have reached level {levels[user_id]['level']}!")
+        save_data(levels)
+        await bot.process_commands(message)
+
+# Slash command setup
+
+@bot.tree.command(name="level", description="Check your level!")
+async def level(interaction: discord.Interaction):
+    user_id = str(interaction.user.id)
+    if user_id in levels:
+        user_level = levels[user_id]["level"]
+        user_xp = levels[user_id]["xp"]
+
+        if (10*levels[user_id]["level"])-user_xp <= 0:
+            await interaction.response.send_message(f"You are at level {user_level}!")
+        else:
+            await interaction.response.send_message(f"You are at level {user_level}, {(10*levels[user_id]['level'])-user_xp} more XP to reach the next level!")
+    else:
+        await interaction.response.send_message("You haven't earned any XP yet!")
+
+# Prints out a leaderboard when user types /leaderboard
+
+@bot.tree.command(name="leaderboard", description="A full list of all members and their level")
+async def leaderboard(interaction: discord.Interaction):
+    data = load_data()
+    sorted_users = sorted(data.items(), key=lambda x: (x[1]['level'], x[1]['xp']), reverse=True)
+
+    guild = bot.get_guild(1096497428322078873)
+
+    output = ""
+    for index, (user_id, user_data) in enumerate(sorted_users, start=1):
+        user = guild.get_member(int(user_id))
+        nickname = user.nick if user and user.nick else user.name if user else "Unknown User"
+        level = user_data['level']
+        xp = user_data['xp']
+
+        output += f"{index}. {nickname} - Level {level}, {xp}XP\n----\n"
+
+    if (output) :
+        await interaction.response.send_message(output)
+    else:
+        await interaction.response.send_message("No users found")
+
 # Adds pronoun roles based off of reaction
 
 @bot.event
 async def on_raw_reaction_add(payload):
-    channel_id = id 
+    channel_id = ID 
     if payload.channel_id != channel_id:
         return
 
@@ -87,7 +169,7 @@ async def on_raw_reaction_add(payload):
 
 @bot.event
 async def on_raw_reaction_remove(payload):
-    channel_id = id 
+    channel_id = ID 
     if payload.channel_id != channel_id:
         return
 
@@ -109,6 +191,7 @@ async def on_raw_reaction_remove(payload):
     if role is not None:
         await user.remove_roles(role)
 
-# Runs bot
+# Runs bot and loads XP and Level data
 
-bot.run("id")
+levels = load_data()
+bot.run(TOKEN) # Replace with your Bot Token
