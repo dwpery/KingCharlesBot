@@ -79,7 +79,7 @@ async def update_channel_name():
     member_count = len(guild.members) - 3
 
     if isinstance(channel, discord.VoiceChannel):
-        await channel.edit(name=f'Members: {member_count}')
+        await channel.edit(name=f'Citizens: {member_count}')
 
 # Adds XP for messages
 
@@ -96,7 +96,7 @@ async def on_message(message):
         if levels[user_id]["xp"] >= 10*levels[user_id]["level"]:
             levels[user_id]["level"] += 1
             levels[user_id]["xp"] = 0  # Reset XP to 0 after leveling up
-            await message.channel.send(f"Congratulations {message.author.mention}! You have reached level {levels[user_id]['level']}!")
+            await bot.get_channel(1159107761372667904).send(f"Congratulations {message.author.mention}! You have reached level {levels[user_id]['level']}!")
         save_data(levels)
         await bot.process_commands(message)
 
